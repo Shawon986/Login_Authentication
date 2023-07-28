@@ -4,6 +4,7 @@ const dotenv = require("dotenv").config()
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const { access } = require("fs")
 const app = express()
 app.use(bodyParser.json())
 
@@ -61,6 +62,7 @@ app.post("/visitors",async(req,res)=>{
 })
 
 //Login a visitor
+
 app.post("/visitors/login",async(req,res)=>{
     const {email,password}=req.body
     const visitor =await Visitors.findOne({email:email})
@@ -78,6 +80,31 @@ app.post("/visitors/login",async(req,res)=>{
         }
     }
 })
+
+//Middleware
+const authAccessToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization
+    const accessToken = authHeader && authHeader.split(" ")[1]
+    if(!accessToken){
+        res.status(401).json({message:"Visitor unauthorized"})
+        return
+    }else{
+        jwt.verify(accessToken,process.env.JWT_SECRET,(err,payload)=>{
+            if(err){
+                res.status(401).json({message:"Visitor unauthorized"})
+                
+            }else{
+                req.payload=payload
+                next()
+            }
+        })
+    }
+    
+}
+
+
+ 
+
  
 //! Get all visitors
 app.get("/visitors",async(req,res)=>{
