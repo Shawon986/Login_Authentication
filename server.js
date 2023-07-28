@@ -3,6 +3,7 @@ const bodyParser = require("body-parser")
 const dotenv = require("dotenv").config()
 const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 const app = express()
 app.use(bodyParser.json())
 
@@ -70,11 +71,14 @@ app.post("/visitors/login",async(req,res)=>{
         if(!passvalidity){
             res.status(401).json({message:"Visitor unauthorized"})
         }else{
-            res.json(visitor)
+            const accessToken = jwt.sign({email:visitor.email,id:visitor._id},process.env.JWT_SECRET)
+            visitorObject= visitor.toJSON()
+            visitorObject.accessToken = accessToken
+            res.json(visitorObject)
         }
     }
 })
-
+ 
 //! Get all visitors
 app.get("/visitors",async(req,res)=>{
     try {
