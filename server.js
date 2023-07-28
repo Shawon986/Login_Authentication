@@ -64,7 +64,8 @@ app.post("/visitors",async(req,res)=>{
 //Login a visitor
 
 app.post("/visitors/login",async(req,res)=>{
-    const {email,password}=req.body
+    try {
+        const {email,password}=req.body
     const visitor =await Visitors.findOne({email:email})
     if(!visitor){
         res.status(404).json({message:"Visitor  not found"})
@@ -79,6 +80,11 @@ app.post("/visitors/login",async(req,res)=>{
             res.json(visitorObject)
         }
     }
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({message:"Something went wrong with the server !!!"})
+    }
+    
 })
 
 //Middleware
@@ -102,7 +108,21 @@ const authAccessToken = (req,res,next)=>{
     
 }
 
-
+//! Get a visitor profile
+app.get("/visitors/profile",authAccessToken,async(req,res)=>{
+    try {
+        const id = req.payload.id
+        const visitor = await Visitors.findById(id)
+        if(!visitor){
+        res.status(404).json({message:"Visitor  not found"})
+        }else{
+            res.json(visitor)
+        }
+    } catch (error) {
+        console.error(error)
+        res.status(400).json({message:"Something went wrong with the server !!!"})
+    }
+})
  
 
  
