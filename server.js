@@ -34,7 +34,7 @@ const Visitors = mongoose.model("Visitor",VisitorSchema)
 
 //! Connection Check
 app.get("/",(req,res)=>{
-    res.json({message:"Welcome to Crud app"})
+    res.json({message:"Welcome to Login Authentication app"})
 })
 
 //! Create Visitor
@@ -59,6 +59,22 @@ app.post("/visitors",async(req,res)=>{
 
 })
 
+//Login a visitor
+app.post("/visitors/login",async(req,res)=>{
+    const {email,password}=req.body
+    const visitor =await Visitors.findOne({email:email})
+    if(!visitor){
+        res.status(404).json({message:"Visitor  not found"})
+    }else{
+        const passvalidity = await bcrypt.compare(password,visitor.password)
+        if(!passvalidity){
+            res.status(401).json({message:"Visitor unauthorized"})
+        }else{
+            res.json(visitor)
+        }
+    }
+})
+
 //! Get all visitors
 app.get("/visitors",async(req,res)=>{
     try {
@@ -76,7 +92,7 @@ app.get("/visitors/:id",async(req,res)=>{
         const id = req.params.id
         const visitor = await Visitors.findById(id)
         if(!visitor){
-            res.status(401).json({message:"Visitor not found"})
+            res.status(404).json({message:"Visitor not found"})
         }else{
             res.json(visitor)
         }
@@ -94,7 +110,7 @@ app.put("/visitors/:id",async(req,res)=>{
         const id = req.params.id
         const visitor = await Visitors.findByIdAndUpdate(id,req.body,{new:true})
         if(!visitor){
-            res.status(401).json({message:"Visitor not found"})
+            res.status(404).json({message:"Visitor not found"})
         }else{
             visitor.password= hashedPass
             res.json(visitor)
@@ -111,7 +127,7 @@ app.delete("/visitors/:id",async(req,res)=>{
         const id = req.params.id
         const visitor = await Visitors.findByIdAndDelete(id)
         if(!visitor){
-            res.status(401).json({message:"Visitor not found"})
+            res.status(404).json({message:"Visitor not found"})
         }else{
             res.json(visitor)
         }
