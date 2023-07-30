@@ -39,4 +39,22 @@ router.get("/", async (req, res) => {
     }
   });
 
+  //! Get a visitor by id
+router.get("/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const visitor = await Visitors.findById(id);
+      if (!visitor) {
+        res.status(404).json({ message: "Visitor not found" });
+      } else {
+        res.json(visitor);
+      }
+    } catch (error) {
+      console.error(error);
+      res
+        .status(400)
+        .json({ message: "Something went wrong with the server !!!" });
+    }
+  });
+
   module.exports = router
