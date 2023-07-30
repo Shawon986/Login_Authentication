@@ -7,25 +7,11 @@ const jwt = require("jsonwebtoken");
 const db_connect = require("./config/db");
 const app = express();
 app.use(bodyParser.json());
+const Visitors = require("./models/schema")
 
 //! MongoDb connection
 db_connect()
 
-//! Schema
-const VisitorSchema = new mongoose.Schema({
-  name: {
-    type: String,
-  },
-  email: {
-    type: String,
-  },
-  password: {
-    type: String,
-  },
-},{timestamps:true});
-
-//! Model
-const Visitors = mongoose.model("Visitor", VisitorSchema);
 
 //! Connection Check
 app.get("/", (req, res) => {
