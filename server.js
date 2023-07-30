@@ -4,20 +4,12 @@ const dotenv = require("dotenv").config();
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { access } = require("fs");
+const db_connect = require("./config/db");
 const app = express();
 app.use(bodyParser.json());
 
 //! MongoDb connection
-const uri = process.env.DB_URI;
-mongoose
-  .connect(uri, { useNewUrlParser: true })
-  .then(() => {
-    console.log("DB is connected");
-  })
-  .catch((error) => {
-    console.error("DB is not connected");
-  });
+db_connect()
 
 //! Schema
 const VisitorSchema = new mongoose.Schema({
