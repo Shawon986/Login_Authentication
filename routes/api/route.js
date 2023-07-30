@@ -26,6 +26,17 @@ router.post("/", async (req, res) => {
     }
   });
 
-  
+  //! Get all visitors
+router.get("/", async (req, res) => {
+    try {
+      const visitor = await Visitors.find();
+      res.json(visitor);
+    } catch (error) {
+      console.error(error);
+      res
+        .status(400)
+        .json({ message: "Something went wrong with the server !!!" });
+    }
+  });
 
   module.exports = router
