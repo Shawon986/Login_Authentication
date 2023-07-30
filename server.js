@@ -1,9 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv").config();
-const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const app = express();
 app.use(bodyParser.json());
 const db_connect = require("./config/db");
@@ -18,28 +18,8 @@ db_connect()
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Login Authentication app" });
 });
-
-//! Create Visitor
-app.post("/visitors", async (req, res) => {
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPass = await bcrypt.hash(req.body.password, salt);
-    const password = hashedPass;
-    const visitorObject = {
-      name: req.body.name,
-      email: req.body.email,
-      password: password,
-    };
-    const visitor = new Visitors(visitorObject);
-    res.status(201).json(visitor);
-    await visitor.save();
-  } catch (error) {
-    console.error(error);
-    res
-      .status(400)
-      .json({ message: "Something went wrong with the server !!!" });
-  }
-});
+//! Routes
+app.use("/api/visitors",require("./routes/api/route"))
 
 //Login a visitor
 
