@@ -71,75 +71,9 @@ app.post("/visitors/login", async (req, res) => {
       res.status(401).json({ message: "Type is not defined" });
     } else {
       if (type == "email") {
-        const visitor = await Visitors.findOne({ email: email });
-        if (!visitor) {
-          res.status(404).json({ message: "Visitor  not found" });
-        } else {
-          const passvalidity = await bcrypt.compare(password, visitor.password);
-          if (!passvalidity) {
-            res.status(401).json({ message: "Visitor unauthorized" });
-          } else {
-            const accessToken = jwt.sign(
-              { email: visitor.email, id: visitor._id },
-              process.env.JWT_SECRET
-            );
-            const refreshToken = jwt.sign(
-              { email: visitor.email, id: visitor._id },
-              process.env.JWT_SECRET
-            );
-
-            visitorObject = visitor.toJSON();
-
-            visitorObject.accessToken = accessToken;
-            visitorObject.refreshToken = refreshToken;
-
-            res.json(visitorObject);
-          }
-        }
+        await emailLogin(email, res, password);
       } else {
-        if (!refreshToken) {
-          res.status(401).json({ message: "RefreshToken is not defined" });
-        } else {
-          jwt.verify(
-            refreshToken,
-            process.env.JWT_SECRET,
-            async (err, payload) => {
-              if (err) {
-                res.status(401).json({ message: "Visitor unauthorized" });
-              } else {
-                const id = payload.id;
-                const visitor = await Visitors.findById(id);
-                if (!visitor) {
-                  res.status(404).json({ message: "Visitor  not found" });
-                } else {
-                  const passvalidity = await bcrypt.compare(
-                    password,
-                    visitor.password
-                  );
-                  if (!passvalidity) {
-                    res.status(401).json({ message: "Visitor unauthorized" });
-                  } else {
-                    const accessToken = jwt.sign(
-                      { email: visitor.email, id: visitor._id },
-                      process.env.JWT_SECRET,{expiresIn:"7d"}
-                    );
-                    const refreshToken = jwt.sign(
-                      { email: visitor.email, id: visitor._id },
-                      process.env.JWT_SECRET,{expiresIn:"60d"}
-                    );
-
-                    visitorObject = visitor.toJSON();
-
-                    visitorObject.accessToken = accessToken;
-                    visitorObject.refreshToken = refreshToken;
-
-                    res.json(visitorObject);
-                  }
-                }
-              }
-            }
-          );
-        }
+        refreshTokenLogin(refreshToken, res, password);
       }
     }
   } catch (error) {
@@ -254,3 +188,67 @@ const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`App is running on port ${port}`);
 });
+function refreshTokenLogin(refreshToken, res, password) {
+  if (!refreshToken) {
+    res.status(401).json({ message: "RefreshToken is not defined" });
+  } else {
+    jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET,
+      async (err, payload) => {
+        if (err) {
+          res.status(401).json({ message: "Visitor unauthorized" });
+        } else {
+          const id = payload.id;
+          const visitor = await Visitors.findById(id);
+          if (!visitor) {
+            res.status(404).json({ message: "Visitor  not found" });
+          } else {
+            const passvalidity = await bcrypt.compare(
+              password,
+              visitor.password
+            );
+            if (!passvalidity) {
+              res.status(401).json({ message: "Visitor unauthorized" });
+            } else {
+              getVisitorToken(visitor, res);
+            }
+          }
+        }
+      }
+    );
+  }
+}
+
+async function emailLogin(email, res, password) {
+  const visitor = await Visitors.findOne({ email: email });
+  if (!visitor) {
+    res.status(404).json({ message: "Visitor  not found" });
+  } else {
+    const passvalidity = await bcrypt.compare(password, visitor.password);
+    if (!passvalidity) {
+      res.status(401).json({ message: "Visitor unauthorized" });
+    } else {
+      getVisitorToken(visitor, res);
+    }
+  }
+}
+
+function getVisitorToken(visitor, res) {
+  const accessToken = jwt.sign(
+    { email: visitor.email, id: visitor._id },
+    process.env.JWT_SECRET
+  );
+  const refreshToken = jwt.sign(
+    { email: visitor.email, id: visitor._id },
+    process.env.JWT_SECRET
+  );
+
+  visitorObject = visitor.toJSON();
+
+  visitorObject.accessToken = accessToken;
+  visitorObject.refreshToken = refreshToken;
+
+  res.json(visitorObject);
+}
+
