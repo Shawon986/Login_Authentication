@@ -30,7 +30,7 @@ const VisitorSchema = new mongoose.Schema({
   password: {
     type: String,
   },
-});
+},{timestamps:true});
 
 //! Model
 const Visitors = mongoose.model("Visitor", VisitorSchema);
@@ -121,11 +121,11 @@ app.post("/visitors/login", async (req, res) => {
                   } else {
                     const accessToken = jwt.sign(
                       { email: visitor.email, id: visitor._id },
-                      process.env.JWT_SECRET
+                      process.env.JWT_SECRET,{expiresIn:"7d"}
                     );
                     const refreshToken = jwt.sign(
                       { email: visitor.email, id: visitor._id },
-                      process.env.JWT_SECRET
+                      process.env.JWT_SECRET,{expiresIn:"60d"}
                     );
 
                     visitorObject = visitor.toJSON();
