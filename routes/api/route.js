@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const Visitors = require("../../models/schema")
 const jwt = require("jsonwebtoken");
+const authAccessToken = require("../../middleware/auth")
 const router = express.Router()
 
 
@@ -103,6 +104,23 @@ router.post("/login", async (req, res) => {
         } else {
           refreshTokenLogin(refreshToken, res, password);
         }
+      }
+    } catch (error) {
+      console.error(error);
+      res
+        .status(400)
+        .json({ message: "Something went wrong with the server !!!" });
+    }
+  });
+  //! Get a visitor profile
+  router.get("/user/profile", authAccessToken, async (req, res) => {
+    try {
+      const id = req.payload.id;
+      const visitor = await Visitors.findById(id);
+      if (!visitor) {
+        res.status(404).json({ message: "Visitor  not found" });
+      } else {
+        res.json(visitor);
       }
     } catch (error) {
       console.error(error);
