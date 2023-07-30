@@ -57,4 +57,37 @@ router.get("/:id", async (req, res) => {
     }
   });
 
+  //! Update a visitor by id
+router.put("/:id", async (req, res) => {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(req.body.password, salt);
+      const id = req.params.id;
+      const visitor = await Visitors.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
+      if (!visitor) {
+        res.status(404).json({ message: "Visitor not found" });
+      } else {
+        visitor.password = hashedPass;
+        res.json(visitor);
+        await visitor.save();
+      }
+    } catch (error) {}
+  });
+  
+  //! Delete a visitor by id
+  router.delete("/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const visitor = await Visitors.findByIdAndDelete(id);
+      if (!visitor) {
+        res.status(404).json({ message: "Visitor not found" });
+      } else {
+        res.json(visitor);
+      }
+    } catch (error) {}
+  });
+  
+
   module.exports = router
